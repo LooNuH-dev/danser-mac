@@ -1,0 +1,7 @@
+./references
+references/
+.DS_Store
+deps/
+dist/
+lazer-bridge/bin/
+lazer-bridge/obj/
