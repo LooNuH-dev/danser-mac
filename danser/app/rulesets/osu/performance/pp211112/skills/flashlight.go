@@ -1,0 +1,76 @@
+package skills
+
+import (
+	"math"
+
+	"github.com/wieku/danser-go/app/beatmap/difficulty"
+	"github.com/wieku/danser-go/app/beatmap/objects"
+	"github.com/wieku/danser-go/app/rulesets/osu/performance/pp211112/preprocessing"
+)
+
+type Flashlight struct {
+	*Skill
+}
+
+func NewFlashlightSkill(d *difficulty.Difficulty, experimental bool) *Flashlight {
+	skill := &Flashlight{NewSkill(d, experimental)}
+
+	if experimental {
+		skill.SkillMultiplier = 0.07
+	} else {
+		skill.SkillMultiplier = 0.15
+	}
+
+	skill.StrainDecayBase = 0.15
+	skill.DecayWeight = 1
+	skill.HistoryLength = 10
+	skill.StrainValueOf = skill.flashlightStrainValue
+
+	return skill
+}
+
+func (s *Flashlight) flashlightStrainValue(current *preprocessing.DifficultyObject) float64 {
+	if _, ok := current.BaseObject.(*objects.Spinner); ok {
+		return 0
+	}
+
+	scalingFactor := 52.0 / s.diff.CircleRadiusU
+	smallDistNerf := 1.0
+	cumulativeStrainTime := 0.0
+
+	result := 0.0
+
+	lastObj := current
+
+	for i := range len(s.Previous) {
+		previous := s.GetPrevious(i)
+
+		if _, ok := previous.BaseObject.(*objects.Spinner); !ok {
+			jumpDistance := float64(current.BaseObject.GetStackedStartPositionMod(s.diff).Dst(previous.BaseObject.GetStackedEndPositionMod(s.diff)))
+
+			if s.Experimental {
+				cumulativeStrainTime += lastObj.StrainTime
+			} else {
+				cumulativeStrainTime += previous.StrainTime
+			}
+
+			// We want to nerf objects that can be easily seen within the Flashlight circle radius.
+			if i == 0 {
+				smallDistNerf = min(1.0, jumpDistance/75.0)
+			}
+
+			// We also want to nerf stacks so that only the first object of the stack is accounted for.
+			stackNerf := min(1.0, (previous.JumpDistance/scalingFactor)/25.0)
+
+			if s.Experimental {
+				result += stackNerf * scalingFactor * jumpDistance / cumulativeStrainTime
+			} else {
+				result += math.Pow(0.8, float64(i)) * stackNerf * scalingFactor * jumpDistance / cumulativeStrainTime
+			}
+		}
+
+		lastObj = previous
+	}
+
+	return math.Pow(smallDistNerf*result, 2.0)
+}

@@ -1,0 +1,102 @@
+package settings
+
+import (
+	"os"
+	"path/filepath"
+
+	"github.com/wieku/danser-go/framework/env"
+)
+
+var General = initGeneral()
+
+func initGeneral() *general {
+	osuBaseDir := getOsuInstallation()
+
+	return &general{
+		OsuSongsDir:       filepath.Join(osuBaseDir, "Songs"),
+		OsuSkinsDir:       filepath.Join(osuBaseDir, "Skins"),
+		OsuReplaysDir:     filepath.Join(osuBaseDir, "Replays"),
+		OsuLazerDir:       getLazerInstallation(),
+		DiscordPresenceOn: true,
+		UnpackOszFiles:    true,
+		VerboseImportLogs: false,
+	}
+}
+
+type general struct {
+	// Directory that contains osu! songs
+	OsuSongsDir string `long:"true" label:"osu! Songs directory" path:"Select osu! Songs directory"`
+
+	// Directory that contains osu! skins
+	OsuSkinsDir string `long:"true" label:"osu! Skins directory" path:"Select osu! Skins directory"`
+
+	// Directory that contains osu! replays
+	OsuReplaysDir string `long:"true" label:"osu! Replays directory" path:"Select osu! Replays directory" tooltip:"Don't use replays directory inside danser's directory!"`
+
+	// osu!lazer data directory (the one with client.realm). If set, beatmaps, skins and replays from lazer's
+	// database are linked into Songs/Skins/Replays directories above before loading.
+	OsuLazerDir string `long:"true" label:"osu!lazer directory" path:"Select osu!lazer data directory" tooltip:"Directory containing client.realm. Leave empty to disable lazer import."`
+
+	// Whether discord should show that danser is on
+	DiscordPresenceOn bool `label:"Discord Rich Presence"`
+
+	// Whether danser should unpack .osz files in Songs folder, osu! may complain about it
+	UnpackOszFiles bool
+
+	// Whether import details should be shown. If false, only failures will be logged.
+	VerboseImportLogs bool
+
+	songsDir   *string
+	skinsDir   *string
+	replaysDir *string
+}
+
+func (g *general) GetSongsDir() string {
+	if g.songsDir == nil {
+		dir := filepath.Join(env.DataDir(), g.OsuSongsDir)
+
+		if filepath.IsAbs(g.OsuSongsDir) {
+			dir = g.OsuSongsDir
+		}
+
+		g.songsDir = &dir
+	}
+
+	return *g.songsDir
+}
+
+func (g *general) GetSkinsDir() string {
+	if g.skinsDir == nil {
+		dir := filepath.Join(env.DataDir(), g.OsuSkinsDir)
+
+		if filepath.IsAbs(g.OsuSkinsDir) {
+			dir = g.OsuSkinsDir
+		}
+
+		g.skinsDir = &dir
+	}
+
+	return *g.skinsDir
+}
+
+func (g *general) GetReplaysDir() string {
+	if g.replaysDir == nil {
+		dir := filepath.Join(env.DataDir(), g.OsuReplaysDir)
+
+		if filepath.IsAbs(g.OsuReplaysDir) {
+			dir = g.OsuReplaysDir
+		}
+
+		g.replaysDir = &dir
+	}
+
+	return *g.replaysDir
+}
+
+func existingLazerDir(dir string) string {
+	if _, err := os.Stat(filepath.Join(dir, "client.realm")); err == nil {
+		return dir
+	}
+
+	return ""
+}
