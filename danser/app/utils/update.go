@@ -12,7 +12,7 @@ import (
 
 // GetLatestVersionFromGitHub makes a request to GitHub and returns url and tag of the latest version found
 func GetLatestVersionFromGitHub() (url string, tag string, err error) {
-	request, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/Wieku/danser-go/releases/latest", nil)
+	request, err := http.NewRequest(http.MethodGet, "https://api.github.com/repos/LooNuH-dev/danser-mac/releases/latest", nil)
 	if err != nil {
 		return "", "", err
 	}
@@ -48,6 +48,7 @@ func GetLatestVersionFromGitHub() (url string, tag string, err error) {
 //   - 0.6.7 becomes 600079999
 //   - 0.6.7-s(napshot)12 becomes 600070012
 //   - 1.0.0 becomes 1000000009999
+//   - 0.12.0-mac becomes 1200009999
 func TransformVersion(version string) uint64 {
 	currentSplit := strings.Split(version, "-")
 	splitDots := strings.Split(strings.TrimSuffix(currentSplit[0], "b"), ".")
@@ -58,7 +59,10 @@ func TransformVersion(version string) uint64 {
 
 	snapshot := "9999"
 	if len(currentSplit) > 1 && !strings.HasPrefix(currentSplit[1], "dev") {
-		snapshot = fmt.Sprintf("%04s", strings.TrimPrefix(strings.TrimPrefix(currentSplit[1], "s"), "napshot"))
+		// non-numeric suffixes like "-mac" are platform tags, not snapshots
+		if n := strings.TrimPrefix(strings.TrimPrefix(currentSplit[1], "s"), "napshot"); n != "" && strings.Trim(n, "0123456789") == "" {
+			snapshot = fmt.Sprintf("%04s", n)
+		}
 	}
 
 	versionInt, err := strconv.ParseUint(strings.Join(splitDots, "")+snapshot, 10, 64)
