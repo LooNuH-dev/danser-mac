@@ -1,75 +1,60 @@
-<p align="center">
-  <img width="300px" src="danser/assets/textures/coinbig.png"/>
-</p>
-
 # danser-mac
 
-**Неофициальный порт [danser-go](https://github.com/Wieku/danser-go) под macOS** (Apple Silicon и Intel, universal-сборка).
+macOS port of [danser-go](https://github.com/Wieku/danser-go) by Wieku. Universal build, runs natively on Apple Silicon and Intel Macs (macOS 12+).
 
-> Это форк. Весь основной код — заслуга [Wieku](https://github.com/Wieku) и контрибьюторов danser-go.
-> Баги, специфичные для macOS, пишите сюда, а не в оригинальный репозиторий.
+All the actual danser work is Wieku's and the danser-go contributors'. This repo just makes it build and run on a Mac. If something breaks only on macOS, open an issue here, not upstream.
 
-danser — это визуализатор карт osu!standard: можно смотреть реплеи, cursordance, knockout'ы и рендерить всё это в mp4.
+## What's different from upstream
 
-## Что добавлено в этом форке
+- Builds as a regular `danser.app`, one binary for arm64 and x86_64
+- osu!lazer import: the bundled `lazer-bridge` reads the lazer library and links songs, skins and replays into danser. .NET is bundled, nothing to install
+- ffmpeg is included, so recording to mp4 works out of the box
+- `.osr` and `.osz` files can be opened from Finder
+- Settings and data live in `~/Library/Application Support/danser`
 
-- 🍎 Нативная сборка под macOS 12+ — один `danser.app` для M1/M2/M3/M4 и Intel
-- 🎮 Поддержка **osu!lazer**: встроенный `lazer-bridge` подтягивает карты, скины и реплеи из библиотеки lazer — ставить .NET не нужно
-- 🎬 ffmpeg уже внутри — рендер в видео работает из коробки
-- 📂 Открытие `.osr` и `.osz` двойным кликом через Finder
-- Данные и настройки хранятся в `~/Library/Application Support/danser`
+## Install
 
-## Установка
+Grab `danser-macos-universal.zip` from [Releases](https://github.com/LooNuH-dev/danser-mac/releases), unzip it and move `danser.app` to Applications.
 
-1. Скачайте `danser-macos-universal.zip` из [Releases](https://github.com/LooNuH-dev/danser-mac/releases)
-2. Распакуйте и перетащите `danser.app` в «Программы»
-3. Приложение не подписано Apple, поэтому при первом запуске macOS его заблокирует. Снимите карантин:
+The app isn't notarized, so macOS will refuse to open it the first time. Either right-click it and choose Open, or clear the quarantine flag:
 
 ```bash
 xattr -dr com.apple.quarantine /Applications/danser.app
 ```
 
-   Либо: правый клик по `danser.app` → «Открыть» → «Открыть».
-
-4. Запускайте. В лаунчере укажите папку osu! или импортируйте библиотеку osu!lazer.
-
-### Запуск из терминала
+To use it from the terminal:
 
 ```bash
 /Applications/danser.app/Contents/MacOS/danser -h
 ```
 
-Все аргументы командной строки — как в [оригинальном README](danser/README.md).
+Command line options are the same as upstream, see [danser/README.md](danser/README.md).
 
-## Сборка из исходников
+## Building
 
-Нужны: Xcode Command Line Tools, Go 1.24+, cmake, git, curl. Всё остальное (SDL3, BASS, libyuv, ffmpeg, .NET SDK) скачивается локально в `./deps`, в систему ничего не ставится.
+You need Xcode Command Line Tools, Go, cmake, git and curl. Everything else (SDL3, BASS, libyuv, ffmpeg, .NET SDK) is fetched into `./deps`, nothing is installed system-wide.
 
 ```bash
 ./setup-deps.sh
 ```
 
 ```bash
-./build-mac.sh 0.1.0
+./build-mac.sh 0.12.0-mac
 ```
 
-Результат: `dist/danser.app` и `dist/danser-macos-universal.zip`.
+Output goes to `dist/danser.app` and `dist/danser-macos-universal.zip`.
 
-## Структура
+Layout:
 
-| Путь | Что это |
-|---|---|
-| `danser/` | исходники danser-go с правками под macOS |
-| `lazer-bridge/` | C#-утилита для чтения realm-базы osu!lazer |
-| `setup-deps.sh` | сборка/загрузка нативных зависимостей (universal) |
-| `build-mac.sh` | сборка universal-бинарника и `.app` |
+- `danser/` - danser-go source with the macOS changes
+- `lazer-bridge/` - small C# tool that reads osu!lazer's realm database
+- `setup-deps.sh` - builds/downloads native dependencies
+- `build-mac.sh` - builds the universal binary and the app bundle
 
-## Известные ограничения
+## Known issues
 
-- macOS считает OpenGL устаревшим; на всякий случай обновите систему, если видите артефакты
-- На Intel-маках рекомендуется macOS 15+ (часть сторонних библиотек собрана под неё)
+- Some prebuilt dependencies target macOS 15 on Intel, so older Intel Macs may not work.
 
-## Лицензия и благодарности
+## License
 
-Код распространяется под лицензией оригинального проекта — см. [danser/LICENSE](danser/LICENSE) и [danser/CREDITS.md](danser/CREDITS.md).
-Оригинал: [Wieku/danser-go](https://github.com/Wieku/danser-go) · Discord danser: https://discord.gg/UTPvbe8
+Same as upstream, see [danser/LICENSE](danser/LICENSE) and [danser/CREDITS.md](danser/CREDITS.md).
