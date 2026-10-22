@@ -39,7 +39,7 @@ You need Xcode Command Line Tools, Go, cmake, git and curl. Everything else (SDL
 ```
 
 ```bash
-./build-mac.sh 0.12.0-mac
+./build-mac.sh 0.12.1-mac
 ```
 
 Output goes to `dist/danser.app` and `dist/danser-macos-universal.zip`.

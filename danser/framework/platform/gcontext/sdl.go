@@ -397,7 +397,7 @@ func loadIconsSDL(name string) {
 
 	err := sdlWindow.SetIcon(mainIcon)
 	if err != nil {
-		panic(err)
+		log.Println("Failed to load window icons:", err.Error())
 	}
 
 	for _, pxMap := range toDispose {
