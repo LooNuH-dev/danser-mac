@@ -4,6 +4,8 @@ macOS port of [danser-go](https://github.com/Wieku/danser-go) by Wieku. Universa
 
 All the actual danser work is Wieku's and the danser-go contributors'. This repo just makes it build and run on a Mac. If something breaks only on macOS, open an issue here, not upstream.
 
+This port is developed with the help of [Claude](https://claude.ai) by Anthropic.
+
 ## What's different from upstream
 
 - Builds as a regular `danser.app`, one binary for arm64 and x86_64
